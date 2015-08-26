@@ -34,16 +34,17 @@ func main() {
 	window.MakeContextCurrent()
 
 	gl.Enable(gl.DEPTH_TEST)
+	gl.Enable(gl.CULL_FACE)
 	gl.DepthFunc(gl.LESS)
 
 	if err := gg.Init(); err != nil {
 		log.Fatal(err)
 	}
 
-	triangle := gg.NewPoly([]gg.Vec3{
-		{0.0, 0.5, 0.0},
-		{0.5, -0.5, 0.0},
-		{-0.5, -0.5, 0.0},
+	triangle := gg.NewPoly([]gg.Vec2{
+		{300, 100},
+		{300, 200},
+		{400, 200},
 	})
 
 	frames := 0
@@ -59,6 +60,7 @@ func main() {
 		gl.ClearColor(0.5, 0.5, 0.5, 1.0)
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
+		triangle.Rotate(1)
 		triangle.Draw()
 
 		glfw.PollEvents()

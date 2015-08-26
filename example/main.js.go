@@ -25,7 +25,7 @@ func main() {
 	lastSec := time.Now()
 	last := time.Now()
 	fps := 60.0
-	targetMillisPerFrame := 1000/fps
+	targetMillisPerFrame := 1000 / fps
 	fmt.Println(targetMillisPerFrame)
 	frames := 0
 	for {
@@ -40,7 +40,7 @@ func main() {
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
 		since := time.Since(last)
-		time.Sleep(time.Duration(targetMillisPerFrame * 1e6) * time.Nanosecond - since)
+		time.Sleep(time.Duration(targetMillisPerFrame*1e6)*time.Nanosecond - since)
 		last = time.Now()
 	}
 }
