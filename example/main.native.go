@@ -3,7 +3,10 @@
 package main
 
 import (
+	"image"
+	"image/png"
 	"log"
+	"os"
 	"runtime"
 	"time"
 
@@ -42,10 +45,26 @@ func main() {
 	}
 
 	triangle := gg.NewPoly([]gg.Vec2{
-		{300, 100},
-		{300, 200},
-		{400, 200},
+		{200, 100},
+		{100, 100},
+		{100, 200},
 	})
+
+	img1, err := NewImageFromFile("test.png")
+	if err != nil {
+		log.Fatal(err)
+	}
+	img2, err := NewImageFromFile("test2.png")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	tex1 := gg.NewTextureFromImage(img1)
+	spr1 := gg.NewSpriteFromTexture(tex1)
+	spr1.SetPosition(300, 300)
+	tex2 := gg.NewTextureFromImage(img2)
+	spr2 := gg.NewSpriteFromTexture(tex2)
+	spr2.SetPosition(400, 400)
 
 	frames := 0
 	last := time.Now()
@@ -60,10 +79,19 @@ func main() {
 		gl.ClearColor(0.5, 0.5, 0.5, 1.0)
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
-		triangle.Rotate(1)
 		triangle.Draw()
+		spr1.Draw()
+		spr2.Draw()
 
 		glfw.PollEvents()
 		window.SwapBuffers()
 	}
+}
+
+func NewImageFromFile(filename string) (image.Image, error) {
+	f, err := os.Open(filename)
+	if err != nil {
+		return nil, err
+	}
+	return png.Decode(f)
 }

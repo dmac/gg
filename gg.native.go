@@ -36,7 +36,7 @@ func Init() error {
 }
 
 type polyPlatformData struct {
-	vao uint32
+	vao     uint32
 	program uint32
 }
 
@@ -46,8 +46,8 @@ func (p *Poly) init(vertices []Vec2) {
 	var mesh []Vec3
 	for _, vertex := range vertices {
 		v := Vec3{
-			vertex[0]-p.center[0],
-			vertex[1]-p.center[1],
+			vertex[0] - p.position[0],
+			vertex[1] - p.position[1],
 			0,
 		}
 		mesh = append(mesh, v)
@@ -73,18 +73,97 @@ func (p *Poly) init(vertices []Vec2) {
 }
 
 func (p *Poly) Draw() {
-	model := p.modelMatrix()
 	gl.UseProgram(p.program)
+
+	model := p.transform()
 	modelUniform := gl.GetUniformLocation(p.program, gl.Str("model\x00"))
 	gl.UniformMatrix4fv(modelUniform, 1, false, &model[0])
+
 	gl.BindVertexArray(p.vao)
 	gl.DrawArrays(gl.TRIANGLE_FAN, 0, p.n)
 }
 
-func (p *Poly) modelMatrix() mgl.Mat4 {
+func (p *Poly) transform() mgl.Mat4 {
 	S := mgl.Scale2D(p.scale, p.scale).Mat4()
 	R := mgl.Rotate2D(mgl.DegToRad(p.rotation)).Mat4()
-	T := mgl.Translate3D(p.center[0], p.center[1], 0)
+	T := mgl.Translate3D(p.position[0], p.position[1], 0)
+	return T.Mul4(R).Mul4(S)
+}
+
+type spritePlatformData struct {
+	vao     uint32
+	program uint32
+}
+
+func (s *Sprite) init() {
+	s.program = program
+
+	vmesh := []Vec3{
+		{0, 0},
+		{0, s.H},
+		{s.W, s.H},
+		{s.W, 0},
+	}
+	var vvbo uint32
+	gl.GenBuffers(1, &vvbo)
+	gl.BindBuffer(gl.ARRAY_BUFFER, vvbo)
+	gl.BufferData(
+		gl.ARRAY_BUFFER,
+		len(vmesh)*int(unsafe.Sizeof(Vec3{})),
+		gl.Ptr(vmesh),
+		gl.STATIC_DRAW,
+	)
+
+	tmesh := []Vec2{
+		{0, 0},
+		{0, 1},
+		{1, 1},
+		{1, 0},
+	}
+	var tvbo uint32
+	gl.GenBuffers(1, &tvbo)
+	gl.BindBuffer(gl.ARRAY_BUFFER, tvbo)
+	gl.BufferData(
+		gl.ARRAY_BUFFER,
+		len(tmesh)*int(unsafe.Sizeof(Vec2{})),
+		gl.Ptr(tmesh),
+		gl.STATIC_DRAW,
+	)
+
+	gl.GenVertexArrays(1, &s.vao)
+	gl.BindVertexArray(s.vao)
+
+	vattrib := uint32(gl.GetAttribLocation(s.program, gl.Str("vertex_position\x00")))
+	gl.EnableVertexAttribArray(vattrib)
+	gl.BindBuffer(gl.ARRAY_BUFFER, vvbo)
+	gl.VertexAttribPointer(vattrib, 3, gl.FLOAT, false, 0, gl.PtrOffset(0))
+
+	tattrib := uint32(gl.GetAttribLocation(s.program, gl.Str("vertex_texture\x00")))
+	gl.EnableVertexAttribArray(tattrib)
+	gl.BindBuffer(gl.ARRAY_BUFFER, tvbo)
+	gl.VertexAttribPointer(tattrib, 2, gl.FLOAT, false, 0, gl.PtrOffset(0))
+}
+
+func (s *Sprite) Draw() {
+	gl.UseProgram(s.program)
+
+	model := s.transform()
+	modelUniform := gl.GetUniformLocation(s.program, gl.Str("model\x00"))
+	gl.UniformMatrix4fv(modelUniform, 1, false, &model[0])
+
+	gl.ActiveTexture(gl.TEXTURE0)
+	gl.BindTexture(gl.TEXTURE_2D, s.tex.t)
+	textureUniform := gl.GetUniformLocation(s.program, gl.Str("tex_loc\x00"))
+	gl.Uniform1i(textureUniform, 0)
+
+	gl.BindVertexArray(s.vao)
+	gl.DrawArrays(gl.TRIANGLE_FAN, 0, 4)
+}
+
+func (s *Sprite) transform() mgl.Mat4 {
+	S := mgl.Scale2D(s.scale, s.scale).Mat4()
+	R := mgl.Rotate2D(mgl.DegToRad(s.rotation)).Mat4()
+	T := mgl.Translate3D(s.position[0], s.position[1], 0)
 	return T.Mul4(R).Mul4(S)
 }
 
