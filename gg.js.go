@@ -17,24 +17,23 @@ const vertexShader = `
 uniform mat4 proj, view, model;
 // in
 attribute vec3 vertex_position;
-//varying vec2 vertex_texture;
+attribute vec2 vertex_texture;
 // out
-//varying vec2 texture_coordinates;
+varying highp vec2 texture_coordinates;
 
 void main() {
 	gl_Position = proj * view * model * vec4(vertex_position, 1);
-	//texture_coordinates = vertex_texture;
+	texture_coordinates = vertex_texture;
 }
 `
 
 const fragmentShader = `
-//uniform sampler2D tex_loc;
+uniform sampler2D tex_loc;
 // in
-//varying vec2 texture_coordinates;
+varying highp vec2 texture_coordinates;
 
 void main() {
-	//gl_FragColor = texture(tex_loc, texture_coordinates);
-	gl_FragColor = vec4(1.0, 0.0, 1.0, 1.0);
+	gl_FragColor = texture2D(tex_loc, texture_coordinates);
 }
 `
 
@@ -45,6 +44,12 @@ type polyPlatformData struct {
 
 type spritePlatformData struct {
 	program *js.Object
+	vvbo    *js.Object
+	tvbo    *js.Object
+}
+
+type texturePlatformData struct {
+	t *js.Object
 }
 
 func Init(glContext *webgl.Context) error {
@@ -73,8 +78,8 @@ func (p *Poly) init(vertices []Vec2) {
 
 	var mesh []float32
 	for _, v := range vertices {
-		mesh = append(mesh, v[0])
-		mesh = append(mesh, v[1])
+		mesh = append(mesh, v[0] - p.position[0])
+		mesh = append(mesh, v[1] - p.position[1])
 		mesh = append(mesh, 0)
 	}
 
@@ -85,10 +90,6 @@ func (p *Poly) init(vertices []Vec2) {
 		mesh,
 		gl.STATIC_DRAW,
 	)
-
-	vattrib := gl.GetAttribLocation(program, "vertex_position")
-	gl.EnableVertexAttribArray(vattrib)
-	gl.VertexAttribPointer(vattrib, 3, gl.FLOAT, false, 0, 0)
 }
 
 func (p *Poly) Draw() {
@@ -99,10 +100,93 @@ func (p *Poly) Draw() {
 	gl.UniformMatrix4fv(modelUniform, false, model[:])
 
 	gl.BindBuffer(gl.ARRAY_BUFFER, p.vvbo)
+	vattrib := gl.GetAttribLocation(program, "vertex_position")
+	gl.EnableVertexAttribArray(vattrib)
+	gl.VertexAttribPointer(vattrib, 3, gl.FLOAT, false, 0, 0)
+
 	gl.DrawArrays(gl.TRIANGLE_FAN, 0, int(p.n))
 }
 
 func (s *Sprite) init() {
+	s.program = program
+
+	vmesh := []float32{
+		0, 0, 0,
+		0, s.W, 0,
+		s.W, s.H, 0,
+		s.W, 0, 0,
+	}
+	s.vvbo = gl.CreateBuffer()
+	gl.BindBuffer(gl.ARRAY_BUFFER, s.vvbo)
+	gl.BufferData(
+		gl.ARRAY_BUFFER,
+		vmesh,
+		gl.STATIC_DRAW,
+	)
+
+	tmesh := []float32{
+		0, 0,
+		0, 1,
+		1, 1,
+		1, 0,
+	}
+	s.tvbo = gl.CreateBuffer()
+	gl.BindBuffer(gl.ARRAY_BUFFER, s.tvbo)
+	gl.BufferData(
+		gl.ARRAY_BUFFER,
+		tmesh,
+		gl.STATIC_DRAW,
+	)
+}
+
+func (s *Sprite) Draw() {
+	gl.UseProgram(s.program)
+
+	model := s.transform()
+	modelUniform := gl.GetUniformLocation(s.program, "model")
+	gl.UniformMatrix4fv(modelUniform, false, model[:])
+
+	gl.BindBuffer(gl.ARRAY_BUFFER, s.vvbo)
+	vattrib := gl.GetAttribLocation(program, "vertex_position")
+	gl.EnableVertexAttribArray(vattrib)
+	gl.VertexAttribPointer(vattrib, 3, gl.FLOAT, false, 0, 0)
+
+	gl.ActiveTexture(gl.TEXTURE0)
+	gl.BindTexture(gl.TEXTURE_2D, s.tex.t)
+	textureUniform := gl.GetUniformLocation(program, "tex_loc")
+	gl.Uniform1i(textureUniform, 0)
+	gl.BindBuffer(gl.ARRAY_BUFFER, s.tvbo)
+	tattrib := gl.GetAttribLocation(program, "vertex_texture")
+	gl.EnableVertexAttribArray(tattrib)
+	gl.VertexAttribPointer(tattrib, 2, gl.FLOAT, false, 0, 0)
+
+	gl.DrawArrays(gl.TRIANGLE_FAN, 0, 4)
+}
+
+func NewTextureFromImage(img *js.Object) *Texture {
+	tex := &Texture{
+		W: img.Get("width").Int(),
+		H: img.Get("height").Int(),
+		texturePlatformData: texturePlatformData{
+			t: gl.CreateTexture(),
+		},
+	}
+	gl.ActiveTexture(gl.TEXTURE0)
+	gl.BindTexture(gl.TEXTURE_2D, tex.t)
+	gl.TexImage2D(
+		gl.TEXTURE_2D,
+		0,
+		gl.RGBA,
+		gl.RGBA,
+		gl.UNSIGNED_BYTE,
+		img,
+	)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+
+	return tex
 }
 
 func linkProgram(vertexShaderSource, fragmentShaderSource string) (*js.Object, error) {

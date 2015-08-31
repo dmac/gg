@@ -1,8 +1,6 @@
 package gg
 
-import (
-	mgl "github.com/go-gl/mathgl/mgl32"
-)
+import mgl "github.com/go-gl/mathgl/mgl32"
 
 type Poly struct {
 	transformable
@@ -30,4 +28,3 @@ func (p *Poly) transform() mgl.Mat4 {
 	T := mgl.Translate3D(p.position[0], p.position[1], 0)
 	return T.Mul4(R).Mul4(S)
 }
-

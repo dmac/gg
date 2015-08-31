@@ -10,7 +10,6 @@ type Sprite struct {
 	W       float32
 	H       float32
 	tex     *Texture
-	program uint32
 	// field for area of texture to draw, for e.g., spritesheet
 }
 

@@ -65,6 +65,10 @@ type polyPlatformData struct {
 	program uint32
 }
 
+type texturePlatformData struct {
+	t uint32
+}
+
 func (p *Poly) init(vertices []Vec2) {
 	p.program = program
 

@@ -60,11 +60,11 @@ func main() {
 	}
 
 	tex1 := gg.NewTextureFromImage(img1)
-	spr1 := gg.NewSpriteFromTexture(tex1)
-	spr1.SetPosition(300, 300)
 	tex2 := gg.NewTextureFromImage(img2)
+	spr1 := gg.NewSpriteFromTexture(tex1)
 	spr2 := gg.NewSpriteFromTexture(tex2)
-	spr2.SetPosition(400, 400)
+	spr1.SetPosition(300, 300)
+	spr2.SetPosition(400, 300)
 
 	frames := 0
 	last := time.Now()
