@@ -6,54 +6,10 @@ import (
 	mgl "github.com/go-gl/mathgl/mgl32"
 )
 
-const vertexShader = `#version 330
-
-uniform mat4 proj, view, model;
-in vec3 vertex_position;
-in vec2 vertex_texture;
-out vec2 texture_coordinates;
-
-void main() {
-	gl_Position = proj * view * model * vec4(vertex_position, 1);
-	texture_coordinates = vertex_texture;
-}
-`
-
-const fragmentShader = `#version 330
-
-uniform sampler2D tex_loc;
-in vec2 texture_coordinates;
-out vec4 color;
-
-void main() {
-	color = texture(tex_loc, texture_coordinates);
-}
-`
-
 type Vec2 mgl.Vec2
 type Vec3 mgl.Vec3
 type Rect struct {
 	Min, Max Vec2
-}
-
-type Poly struct {
-	transformable
-	polyPlatformData
-	n int32
-	// TODO(dmac) color
-}
-
-func NewPoly(vertices []Vec2) *Poly {
-	aabb := computeAABB(vertices)
-	p := &Poly{
-		transformable: transformable{
-			position: aabb.Min,
-			scale:    1,
-		},
-		n: int32(len(vertices)),
-	}
-	p.init(vertices)
-	return p
 }
 
 type transformable struct {

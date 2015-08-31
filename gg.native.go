@@ -4,12 +4,37 @@ package gg
 
 import (
 	"fmt"
+	"image"
 	"strings"
 	"unsafe"
 
 	"github.com/go-gl/gl/v3.3-core/gl"
 	mgl "github.com/go-gl/mathgl/mgl32"
 )
+
+const vertexShader = `#version 330
+
+uniform mat4 proj, view, model;
+in vec3 vertex_position;
+in vec2 vertex_texture;
+out vec2 texture_coordinates;
+
+void main() {
+	gl_Position = proj * view * model * vec4(vertex_position, 1);
+	texture_coordinates = vertex_texture;
+}
+`
+
+const fragmentShader = `#version 330
+
+uniform sampler2D tex_loc;
+in vec2 texture_coordinates;
+out vec4 color;
+
+void main() {
+	color = texture(tex_loc, texture_coordinates);
+}
+`
 
 var program uint32
 
@@ -83,13 +108,6 @@ func (p *Poly) Draw() {
 	gl.DrawArrays(gl.TRIANGLE_FAN, 0, p.n)
 }
 
-func (p *Poly) transform() mgl.Mat4 {
-	S := mgl.Scale2D(p.scale, p.scale).Mat4()
-	R := mgl.Rotate2D(mgl.DegToRad(p.rotation)).Mat4()
-	T := mgl.Translate3D(p.position[0], p.position[1], 0)
-	return T.Mul4(R).Mul4(S)
-}
-
 type spritePlatformData struct {
 	vao     uint32
 	program uint32
@@ -160,11 +178,42 @@ func (s *Sprite) Draw() {
 	gl.DrawArrays(gl.TRIANGLE_FAN, 0, 4)
 }
 
-func (s *Sprite) transform() mgl.Mat4 {
-	S := mgl.Scale2D(s.scale, s.scale).Mat4()
-	R := mgl.Rotate2D(mgl.DegToRad(s.rotation)).Mat4()
-	T := mgl.Translate3D(s.position[0], s.position[1], 0)
-	return T.Mul4(R).Mul4(S)
+func NewTextureFromImage(img image.Image) *Texture {
+	var buf []uint8
+	for y := img.Bounds().Min.Y; y < img.Bounds().Max.Y; y++ {
+		for x := img.Bounds().Min.X; x < img.Bounds().Max.X; x++ {
+			r, g, b, a := img.At(x, y).RGBA()
+			buf = append(buf, uint8(r/256))
+			buf = append(buf, uint8(g/256))
+			buf = append(buf, uint8(b/256))
+			buf = append(buf, uint8(a/256))
+		}
+	}
+	tex := &Texture{
+		W: img.Bounds().Dx(),
+		H: img.Bounds().Dy(),
+	}
+	gl.GenTextures(1, &tex.t)
+	gl.ActiveTexture(gl.TEXTURE0)
+	gl.Enable(gl.TEXTURE_2D)
+	gl.BindTexture(gl.TEXTURE_2D, tex.t)
+	gl.TexImage2D(
+		gl.TEXTURE_2D,
+		0,
+		gl.RGBA,
+		int32(img.Bounds().Dx()),
+		int32(img.Bounds().Dy()),
+		0,
+		gl.RGBA,
+		gl.UNSIGNED_BYTE,
+		gl.Ptr(buf),
+	)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+
+	return tex
 }
 
 func linkProgram(vertexShaderSource, fragmentShaderSource string) (uint32, error) {

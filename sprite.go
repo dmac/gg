@@ -1,5 +1,9 @@
 package gg
 
+import (
+	mgl "github.com/go-gl/mathgl/mgl32"
+)
+
 type Sprite struct {
 	transformable
 	spritePlatformData
@@ -21,4 +25,11 @@ func NewSpriteFromTexture(tex *Texture) *Sprite {
 	}
 	s.init()
 	return s
+}
+
+func (s *Sprite) transform() mgl.Mat4 {
+	S := mgl.Scale2D(s.scale, s.scale).Mat4()
+	R := mgl.Rotate2D(mgl.DegToRad(s.rotation)).Mat4()
+	T := mgl.Translate3D(s.position[0], s.position[1], 0)
+	return T.Mul4(R).Mul4(S)
 }

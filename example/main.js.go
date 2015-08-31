@@ -3,9 +3,10 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"time"
+
+	"github.com/dmac/gg"
 
 	"github.com/gopherjs/gopherjs/js"
 	"github.com/gopherjs/webgl"
@@ -15,6 +16,9 @@ func main() {
 	document := js.Global.Get("document")
 	canvas := document.Call("createElement", "canvas")
 	document.Get("body").Call("appendChild", canvas)
+	canvas.Call("setAttribute", "id", "canvas")
+	canvas.Call("setAttribute", "width", 640)
+	canvas.Call("setAttribute", "height", 480)
 
 	attrs := webgl.DefaultAttributes()
 	gl, err := webgl.NewContext(canvas, attrs)
@@ -22,25 +26,23 @@ func main() {
 		log.Fatal(err)
 	}
 
-	lastSec := time.Now()
-	last := time.Now()
-	fps := 60.0
-	targetMillisPerFrame := 1000 / fps
-	fmt.Println(targetMillisPerFrame)
-	frames := 0
-	for {
-		frames++
-		if time.Since(lastSec) > time.Second {
-			fmt.Println(float64(frames) / float64(time.Since(lastSec).Nanoseconds()) * 1e9)
-			frames = 0
-			lastSec = time.Now()
-		}
+	if err := gg.Init(gl); err != nil {
+		log.Fatal(err)
+	}
 
+	triangle := gg.NewPoly([]gg.Vec2{
+		{150, 50},
+		{50, 50},
+		{50, 150},
+	})
+
+	for {
 		gl.ClearColor(0.5, 0.5, 0.5, 1.0)
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
-		since := time.Since(last)
-		time.Sleep(time.Duration(targetMillisPerFrame*1e6)*time.Nanosecond - since)
-		last = time.Now()
+		triangle.Draw()
+
+		time.Sleep(16 * time.Millisecond)
+		break
 	}
 }
