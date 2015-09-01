@@ -58,7 +58,7 @@ type texturePlatformData struct {
 	t *js.Object
 }
 
-func Init(glContext *webgl.Context) error {
+func Init(canvasWidth, canvasHeight int, glContext *webgl.Context) error {
 	gl = glContext
 
 	var err error
@@ -68,7 +68,7 @@ func Init(glContext *webgl.Context) error {
 	}
 	gl.UseProgram(program)
 
-	proj := mgl.Ortho(0, 640, 480, 0, 0, 1)
+	proj := mgl.Ortho(0, float32(canvasWidth), float32(canvasHeight), 0, 0, 1)
 	projUniform := gl.GetUniformLocation(program, "proj")
 	gl.UniformMatrix4fv(projUniform, false, proj[:])
 

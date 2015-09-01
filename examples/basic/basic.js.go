@@ -12,13 +12,16 @@ import (
 	"github.com/gopherjs/webgl"
 )
 
+const CanvasWidth = 640
+const CanvasHeight = 480
+
 func main() {
 	document := js.Global.Get("document")
 	canvas := document.Call("createElement", "canvas")
 	document.Get("body").Call("appendChild", canvas)
 	canvas.Call("setAttribute", "id", "canvas")
-	canvas.Call("setAttribute", "width", 640)
-	canvas.Call("setAttribute", "height", 480)
+	canvas.Call("setAttribute", "width", CanvasWidth)
+	canvas.Call("setAttribute", "height", CanvasHeight)
 
 	attrs := webgl.DefaultAttributes()
 	gl, err := webgl.NewContext(canvas, attrs)
@@ -26,7 +29,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	if err := gg.Init(gl); err != nil {
+	if err := gg.Init(CanvasWidth, CanvasHeight, gl); err != nil {
 		log.Fatal(err)
 	}
 

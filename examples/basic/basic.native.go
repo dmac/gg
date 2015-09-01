@@ -15,6 +15,9 @@ import (
 	"github.com/go-gl/glfw/v3.1/glfw"
 )
 
+const WindowWidth = 640
+const WindowHeight = 480
+
 func main() {
 	runtime.LockOSThread()
 	if err := glfw.Init(); err != nil {
@@ -30,7 +33,7 @@ func main() {
 	if err := gl.Init(); err != nil {
 		log.Fatal(err)
 	}
-	window, err := glfw.CreateWindow(640, 480, "Hello", nil, nil)
+	window, err := glfw.CreateWindow(WindowWidth, WindowHeight, "Basic", nil, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -43,7 +46,7 @@ func main() {
 	gl.Enable(gl.BLEND)
 	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 
-	if err := gg.Init(); err != nil {
+	if err := gg.Init(WindowWidth, WindowHeight); err != nil {
 		log.Fatal(err)
 	}
 

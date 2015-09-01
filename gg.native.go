@@ -44,7 +44,7 @@ void main() {
 
 var program uint32
 
-func Init() error {
+func Init(windowWidth, windowHeight int) error {
 	var err error
 	program, err = linkProgram(vertexShader, fragmentShader)
 	if err != nil {
@@ -55,7 +55,7 @@ func Init() error {
 	dims := make([]float32, 4)
 	gl.GetFloatv(gl.VIEWPORT, &dims[0])
 
-	proj := mgl.Ortho(0, 640, 480, 0, 0, 1)
+	proj := mgl.Ortho(0, float32(windowWidth), float32(windowHeight), 0, 0, 1)
 	projUniform := gl.GetUniformLocation(program, gl.Str("proj\x00"))
 	gl.UniformMatrix4fv(projUniform, 1, false, &proj[0])
 
