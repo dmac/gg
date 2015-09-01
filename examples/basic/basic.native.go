@@ -40,6 +40,9 @@ func main() {
 	gl.Enable(gl.CULL_FACE)
 	gl.DepthFunc(gl.LESS)
 
+	gl.Enable(gl.BLEND)
+	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+
 	if err := gg.Init(); err != nil {
 		log.Fatal(err)
 	}
@@ -49,6 +52,7 @@ func main() {
 		{240, 200},
 		{400, 200},
 	})
+	triangle.SetColor(1, 0, 1, 1)
 
 	img1, err := NewImageFromFile("test.png")
 	if err != nil {

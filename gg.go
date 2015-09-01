@@ -8,6 +8,7 @@ import (
 
 type Vec2 mgl.Vec2
 type Vec3 mgl.Vec3
+type Vec4 mgl.Vec4
 type Rect struct {
 	Min, Max Vec2
 }
@@ -15,7 +16,8 @@ type Rect struct {
 type Poly struct {
 	transformable
 	polyPlatformData
-	n int32
+	color [4]float32
+	n     int32
 	// TODO(dmac) color
 }
 
@@ -26,10 +28,18 @@ func NewPoly(vertices []Vec2) *Poly {
 			position: aabb.Min,
 			scale:    1,
 		},
+		color: [4]float32{0, 0, 0, 1},
 		n: int32(len(vertices)),
 	}
 	p.init(vertices)
 	return p
+}
+
+func (p *Poly) SetColor(r, g, b, a float32) {
+	p.color[0] = r
+	p.color[1] = g
+	p.color[2] = b
+	p.color[3] = a
 }
 
 func (p *Poly) transform() mgl.Mat4 {
@@ -42,9 +52,9 @@ func (p *Poly) transform() mgl.Mat4 {
 type Sprite struct {
 	transformable
 	spritePlatformData
-	W       float32
-	H       float32
-	tex     *Texture
+	W   float32
+	H   float32
+	tex *Texture
 	// field for area of texture to draw, for e.g., spritesheet
 }
 

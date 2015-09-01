@@ -29,11 +29,17 @@ void main() {
 
 const fragmentShader = `
 uniform sampler2D tex_loc;
+uniform highp float mix_value;
+uniform highp vec4 color;
 // in
 varying highp vec2 texture_coordinates;
 
 void main() {
-	gl_FragColor = texture2D(tex_loc, texture_coordinates);
+	gl_FragColor = mix(
+		color,
+		texture2D(tex_loc, texture_coordinates),
+		mix_value
+	);
 }
 `
 
@@ -104,6 +110,12 @@ func (p *Poly) Draw() {
 	gl.EnableVertexAttribArray(vattrib)
 	gl.VertexAttribPointer(vattrib, 3, gl.FLOAT, false, 0, 0)
 
+	mixUniform := gl.GetUniformLocation(p.program, "mix_value")
+	gl.Uniform1f(mixUniform, 0.0)
+
+	colorUniform := gl.GetUniformLocation(p.program, "color")
+	gl.Uniform4f(colorUniform, p.color[0], p.color[1], p.color[2], p.color[3])
+
 	gl.DrawArrays(gl.TRIANGLE_FAN, 0, int(p.n))
 }
 
@@ -159,6 +171,9 @@ func (s *Sprite) Draw() {
 	tattrib := gl.GetAttribLocation(program, "vertex_texture")
 	gl.EnableVertexAttribArray(tattrib)
 	gl.VertexAttribPointer(tattrib, 2, gl.FLOAT, false, 0, 0)
+
+	mixUniform := gl.GetUniformLocation(s.program, "mix_value")
+	gl.Uniform1f(mixUniform, 1.0)
 
 	gl.DrawArrays(gl.TRIANGLE_FAN, 0, 4)
 }

@@ -28,11 +28,17 @@ void main() {
 const fragmentShader = `#version 330
 
 uniform sampler2D tex_loc;
+uniform float mix_value;
+uniform vec4 color;
 in vec2 texture_coordinates;
-out vec4 color;
+out vec4 frag_color;
 
 void main() {
-	color = texture(tex_loc, texture_coordinates);
+	frag_color = mix(
+		color,
+		texture(tex_loc, texture_coordinates),
+		mix_value
+	);
 }
 `
 
@@ -108,6 +114,12 @@ func (p *Poly) Draw() {
 	modelUniform := gl.GetUniformLocation(p.program, gl.Str("model\x00"))
 	gl.UniformMatrix4fv(modelUniform, 1, false, &model[0])
 
+	mixUniform := gl.GetUniformLocation(p.program, gl.Str("mix_value\x00"))
+	gl.Uniform1f(mixUniform, 0.0)
+
+	colorUniform := gl.GetUniformLocation(p.program, gl.Str("color\x00"))
+	gl.Uniform4f(colorUniform, p.color[0], p.color[1], p.color[2], p.color[3])
+
 	gl.BindVertexArray(p.vao)
 	gl.DrawArrays(gl.TRIANGLE_FAN, 0, p.n)
 }
@@ -177,6 +189,9 @@ func (s *Sprite) Draw() {
 	gl.BindTexture(gl.TEXTURE_2D, s.tex.t)
 	textureUniform := gl.GetUniformLocation(s.program, gl.Str("tex_loc\x00"))
 	gl.Uniform1i(textureUniform, 0)
+
+	mixUniform := gl.GetUniformLocation(s.program, gl.Str("mix_value\x00"))
+	gl.Uniform1f(mixUniform, 1.0)
 
 	gl.BindVertexArray(s.vao)
 	gl.DrawArrays(gl.TRIANGLE_FAN, 0, 4)

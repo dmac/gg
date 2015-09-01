@@ -35,6 +35,7 @@ func main() {
 		{240, 200},
 		{400, 200},
 	})
+	triangle.SetColor(1, 0, 1, 1)
 
 	img1 := NewImageFromFile("test.png")
 	img2 := NewImageFromFile("test2.png")
