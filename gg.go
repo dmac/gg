@@ -12,6 +12,68 @@ type Rect struct {
 	Min, Max Vec2
 }
 
+type Poly struct {
+	transformable
+	polyPlatformData
+	n int32
+	// TODO(dmac) color
+}
+
+func NewPoly(vertices []Vec2) *Poly {
+	aabb := computeAABB(vertices)
+	p := &Poly{
+		transformable: transformable{
+			position: aabb.Min,
+			scale:    1,
+		},
+		n: int32(len(vertices)),
+	}
+	p.init(vertices)
+	return p
+}
+
+func (p *Poly) transform() mgl.Mat4 {
+	S := mgl.Scale2D(p.scale, p.scale).Mat4()
+	R := mgl.Rotate2D(mgl.DegToRad(p.rotation)).Mat4()
+	T := mgl.Translate3D(p.position[0], p.position[1], 0)
+	return T.Mul4(R).Mul4(S)
+}
+
+type Sprite struct {
+	transformable
+	spritePlatformData
+	W       float32
+	H       float32
+	tex     *Texture
+	// field for area of texture to draw, for e.g., spritesheet
+}
+
+func NewSpriteFromTexture(tex *Texture) *Sprite {
+	s := &Sprite{
+		transformable: transformable{
+			scale: 1,
+		},
+		W:   float32(tex.W),
+		H:   float32(tex.H),
+		tex: tex,
+	}
+	s.init()
+	return s
+}
+
+func (s *Sprite) transform() mgl.Mat4 {
+	S := mgl.Scale2D(s.scale, s.scale).Mat4()
+	R := mgl.Rotate2D(mgl.DegToRad(s.rotation)).Mat4()
+	T := mgl.Translate3D(s.position[0], s.position[1], 0)
+	return T.Mul4(R).Mul4(S)
+}
+
+type Texture struct {
+	texturePlatformData
+	W int
+	H int
+}
+
 type transformable struct {
 	// TODO(dmac) origin Vec2
 	position Vec2
@@ -43,16 +105,6 @@ func (t *transformable) Rotate(degrees float32) {
 
 func (t *transformable) Scale(factor float32) {
 	t.scale *= factor
-}
-
-func centroid2(vs []Vec2) Vec2 {
-	var sx, sy float32
-	for _, v := range vs {
-		sx += v[0]
-		sy += v[1]
-	}
-	l := float32(len(vs))
-	return Vec2{sx / l, sy / l}
 }
 
 func computeAABB(vs []Vec2) Rect {

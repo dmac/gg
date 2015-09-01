@@ -31,16 +31,10 @@ func main() {
 	}
 
 	triangle := gg.NewPoly([]gg.Vec2{
-		{200, 100},
-		{100, 100},
-		{100, 200},
+		{320, 100},
+		{240, 200},
+		{400, 200},
 	})
-
-	aabb := gg.Rect{
-		gg.Vec2{0, 100},
-		gg.Vec2{200, 200},
-	}
-	_ = aabb
 
 	img1 := NewImageFromFile("test.png")
 	img2 := NewImageFromFile("test2.png")
@@ -48,8 +42,8 @@ func main() {
 	tex2 := gg.NewTextureFromImage(img2)
 	spr1 := gg.NewSpriteFromTexture(tex1)
 	spr2 := gg.NewSpriteFromTexture(tex2)
-	spr1.SetPosition(300, 300)
-	spr2.SetPosition(400, 300)
+	spr1.SetPosition(240, 230)
+	spr2.SetPosition(340, 230)
 
 	for {
 		gl.ClearColor(0.5, 0.5, 0.5, 1.0)

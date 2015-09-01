@@ -45,9 +45,9 @@ func main() {
 	}
 
 	triangle := gg.NewPoly([]gg.Vec2{
-		{200, 100},
-		{100, 100},
-		{100, 200},
+		{320, 100},
+		{240, 200},
+		{400, 200},
 	})
 
 	img1, err := NewImageFromFile("test.png")
@@ -63,8 +63,8 @@ func main() {
 	tex2 := gg.NewTextureFromImage(img2)
 	spr1 := gg.NewSpriteFromTexture(tex1)
 	spr2 := gg.NewSpriteFromTexture(tex2)
-	spr1.SetPosition(300, 300)
-	spr2.SetPosition(400, 300)
+	spr1.SetPosition(240, 230)
+	spr2.SetPosition(340, 230)
 
 	frames := 0
 	last := time.Now()
