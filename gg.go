@@ -22,7 +22,7 @@ func NewPoly(vertices [][2]float32) *Poly {
 	aabb := computeAABB(vertices)
 	p := &Poly{
 		transformable: transformable{
-			position: aabb.Min,
+			Position: aabb.Min,
 			scale:    1,
 		},
 		color: [4]float32{0, 0, 0, 1},
@@ -42,7 +42,7 @@ func (p *Poly) SetColor(r, g, b, a float32) {
 func (p *Poly) transform() mgl.Mat4 {
 	S := mgl.Scale2D(p.scale, p.scale).Mat4()
 	R := mgl.Rotate2D(mgl.DegToRad(p.rotation)).Mat4()
-	T := mgl.Translate3D(p.position[0], p.position[1], 0)
+	T := mgl.Translate3D(p.Position[0], p.Position[1], 0)
 	return T.Mul4(R).Mul4(S)
 }
 
@@ -71,7 +71,7 @@ func NewSpriteFromTexture(tex *Texture) *Sprite {
 func (s *Sprite) transform() mgl.Mat4 {
 	S := mgl.Scale2D(s.scale, s.scale).Mat4()
 	R := mgl.Rotate2D(mgl.DegToRad(s.rotation)).Mat4()
-	T := mgl.Translate3D(s.position[0], s.position[1], 0)
+	T := mgl.Translate3D(s.Position[0], s.Position[1], 0)
 	return T.Mul4(R).Mul4(S)
 }
 
@@ -83,14 +83,14 @@ type Texture struct {
 
 type transformable struct {
 	// TODO(dmac) origin Vec2
-	position [2]float32
+	Position [2]float32
 	rotation float32
 	scale    float32
 }
 
 func (t *transformable) SetPosition(x, y float32) {
-	t.position[0] = x
-	t.position[1] = y
+	t.Position[0] = x
+	t.Position[1] = y
 }
 
 func (t *transformable) SetRotation(degrees float32) {
@@ -101,9 +101,9 @@ func (t *transformable) SetScale(s float32) {
 	t.scale = s
 }
 
-func (t *transformable) Position(x, y float32) {
-	t.position[0] += x
-	t.position[1] += y
+func (t *transformable) Move(x, y float32) {
+	t.Position[0] += x
+	t.Position[1] += y
 }
 
 func (t *transformable) Rotate(degrees float32) {

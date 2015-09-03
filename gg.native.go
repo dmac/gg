@@ -85,8 +85,8 @@ func (p *Poly) init(vertices [][2]float32) {
 
 	var mesh []float32
 	for _, vertex := range vertices {
-		mesh = append(mesh, vertex[0] - p.position[0])
-		mesh = append(mesh, vertex[1] - p.position[1])
+		mesh = append(mesh, vertex[0] - p.Position[0])
+		mesh = append(mesh, vertex[1] - p.Position[1])
 		mesh = append(mesh, 0)
 	}
 
