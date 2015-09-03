@@ -12,6 +12,7 @@ type Tetris struct {
 	board    *Board
 	gameOver bool
 	ticker   *time.Ticker
+	score int
 }
 
 func NewTetris(windowWidth, windowHeight int) *Tetris {
@@ -67,14 +68,14 @@ func (t *Tetris) HandleInput(input Input) {
 	if movedPiece.Valid() {
 		t.board.current = movedPiece
 		return
-	} else if input == inputDown {
-		cells := orientations[current.typ][current.orientation]
-		for row, cols := range cells {
-			for col, cell := range cols {
-				if cell {
-					current.board.grid[current.row+row][current.col+col] = true
-				}
-			}
+	}
+	// Anchor piece, clear lines, new piece
+	if input == inputDown {
+		t.board.AnchorCurrent()
+		cleared := t.board.ClearLines()
+		if cleared > 0 {
+			t.score += cleared
+			fmt.Println("Score:", t.score)
 		}
 		t.board.current = NewPiece(t.board)
 		if !t.board.current.Valid() {
@@ -116,6 +117,43 @@ func NewBoard(width, height int) *Board {
 	board.sprs["orange"] = gg.NewSpriteFromTexture(textures["orange"])
 
 	return board
+}
+
+func (b *Board) AnchorCurrent() {
+	cells := orientations[b.current.typ][b.current.orientation]
+	for row, cols := range cells {
+		for col, cell := range cols {
+			if cell {
+				b.current.board.grid[b.current.row+row][b.current.col+col] = true
+			}
+		}
+	}
+}
+
+func (b *Board) ClearLines() (cleared int) {
+	for row := len(b.grid) - 1; row >= 0; {
+		full := true
+		for _, cell := range b.grid[row] {
+			if !cell {
+				full = false
+				break
+			}
+		}
+		if !full {
+			row--
+			continue
+		}
+		cleared++
+		for r := row; r > 0; r-- {
+			for c := 0; c < len(b.grid[r]); c++ {
+				b.grid[r][c] = b.grid[r-1][c]
+			}
+		}
+		for c := 0; c < len(b.grid[0]); c++ {
+			b.grid[0][c] = false
+		}
+	}
+	return
 }
 
 func (b *Board) Draw() {
