@@ -1,3 +1,7 @@
-/examples/basic/basic
 /examples/basic/*.js
 /examples/basic/*.js.map
+/examples/basic/basic
+/examples/tetris/*.js
+/examples/tetris/*.js.map
+/examples/tetris/orange.pxi
+/examples/tetris/tetris
