@@ -15,7 +15,7 @@ type Rect struct {
 
 type Poly struct {
 	transformable
-	polyPlatformData
+	polyBackend
 	color [4]float32
 	n     int32
 	// TODO(dmac) color
@@ -51,7 +51,7 @@ func (p *Poly) transform() mgl.Mat4 {
 
 type Sprite struct {
 	transformable
-	spritePlatformData
+	spriteBackend
 	W   float32
 	H   float32
 	tex *Texture
@@ -79,7 +79,7 @@ func (s *Sprite) transform() mgl.Mat4 {
 }
 
 type Texture struct {
-	texturePlatformData
+	textureBackend
 	W int
 	H int
 }

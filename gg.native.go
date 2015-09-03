@@ -12,6 +12,8 @@ import (
 	mgl "github.com/go-gl/mathgl/mgl32"
 )
 
+var program uint32
+
 const vertexShader = `#version 330
 
 uniform mat4 proj, view, model;
@@ -42,7 +44,19 @@ void main() {
 }
 `
 
-var program uint32
+type polyBackend struct {
+	vao     uint32
+	program uint32
+}
+
+type spriteBackend struct {
+	vao     uint32
+	program uint32
+}
+
+type textureBackend struct {
+	t uint32
+}
 
 func Init(windowWidth, windowHeight int) error {
 	var err error
@@ -64,15 +78,6 @@ func Init(windowWidth, windowHeight int) error {
 	gl.UniformMatrix4fv(viewUniform, 1, false, &view[0])
 
 	return nil
-}
-
-type polyPlatformData struct {
-	vao     uint32
-	program uint32
-}
-
-type texturePlatformData struct {
-	t uint32
 }
 
 func (p *Poly) init(vertices []Vec2) {
@@ -122,11 +127,6 @@ func (p *Poly) Draw() {
 
 	gl.BindVertexArray(p.vao)
 	gl.DrawArrays(gl.TRIANGLE_FAN, 0, p.n)
-}
-
-type spritePlatformData struct {
-	vao     uint32
-	program uint32
 }
 
 func (s *Sprite) init() {

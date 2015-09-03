@@ -43,18 +43,18 @@ void main() {
 }
 `
 
-type polyPlatformData struct {
+type polyBackend struct {
 	program *js.Object
 	vvbo    *js.Object
 }
 
-type spritePlatformData struct {
+type spriteBackend struct {
 	program *js.Object
 	vvbo    *js.Object
 	tvbo    *js.Object
 }
 
-type texturePlatformData struct {
+type textureBackend struct {
 	t *js.Object
 }
 
@@ -182,7 +182,7 @@ func NewTextureFromImage(img *js.Object) *Texture {
 	tex := &Texture{
 		W: img.Get("width").Int(),
 		H: img.Get("height").Int(),
-		texturePlatformData: texturePlatformData{
+		textureBackend: textureBackend{
 			t: gl.CreateTexture(),
 		},
 	}
