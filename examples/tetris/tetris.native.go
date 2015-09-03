@@ -53,7 +53,7 @@ func main() {
 		gl.ClearColor(0.5, 0.5, 0.5, 1.0)
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
-		// game IO here
+		tetris.Update()
 		tetris.Draw()
 
 		glfw.PollEvents()

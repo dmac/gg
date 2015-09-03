@@ -11,6 +11,7 @@ type Tetris struct {
 	bg       *gg.Poly
 	board    *Board
 	gameOver bool
+	ticker   *time.Ticker
 }
 
 func NewTetris(windowWidth, windowHeight int) *Tetris {
@@ -25,20 +26,20 @@ func NewTetris(windowWidth, windowHeight int) *Tetris {
 	board.bg.Position = [2]float32{100, 50}
 
 	t := &Tetris{
-		bg:    bg,
-		board: board,
+		bg:     bg,
+		board:  board,
+		ticker: time.NewTicker(time.Second),
 	}
 
-	go func() {
-		for range time.NewTicker(1 * time.Second).C {
-			t.HandleInput(inputDown)
-			if t.gameOver {
-				return
-			}
-		}
-	}()
-
 	return t
+}
+
+func (t *Tetris) Update() {
+	select {
+	case <-t.ticker.C:
+		t.HandleInput(inputDown)
+	default:
+	}
 }
 
 func (t *Tetris) Draw() {
@@ -54,7 +55,7 @@ func (t *Tetris) HandleInput(input Input) {
 	movedPiece := current.Copy()
 	switch input {
 	case inputUp:
-		movedPiece.row -= 1
+		movedPiece.orientation = (movedPiece.orientation + 1) % len(orientations[movedPiece.typ])
 	case inputDown:
 		movedPiece.row += 1
 	case inputLeft:
@@ -67,7 +68,8 @@ func (t *Tetris) HandleInput(input Input) {
 		t.board.current = movedPiece
 		return
 	} else if input == inputDown {
-		for row, cols := range current.cells {
+		cells := orientations[current.typ][current.orientation]
+		for row, cols := range cells {
 			for col, cell := range cols {
 				if cell {
 					current.board.grid[current.row+row][current.col+col] = true
@@ -135,38 +137,28 @@ func (b *Board) Draw() {
 }
 
 type Piece struct {
-	spr      *gg.Sprite
-	board    *Board
-	row, col int
-	cells    [][]bool
+	spr         *gg.Sprite
+	board       *Board
+	row, col    int
+	typ         string
+	orientation int
 }
 
 func NewPiece(board *Board) *Piece {
-	// #
-	// ###
-	cells := make([][]bool, 2)
-	for i := 0; i < len(cells); i++ {
-		cells[i] = make([]bool, 3)
-	}
-	cells[0][0] = true
-	cells[1][0] = true
-	cells[1][1] = true
-	cells[1][2] = true
-
-	spr := gg.NewSpriteFromTexture(textures["orange"])
-
 	return &Piece{
-		spr:   spr,
-		row:   1,
-		col:   2,
-		cells: cells,
-		board: board,
+		spr:         gg.NewSpriteFromTexture(textures["orange"]),
+		row:         1,
+		col:         2,
+		board:       board,
+		typ:         "L",
+		orientation: 0,
 	}
 }
 
 func (p *Piece) Draw() {
 	boardPosition := p.board.bg.Position
-	for row, cols := range p.cells {
+	cells := orientations[p.typ][p.orientation]
+	for row, cols := range cells {
 		for col, cell := range cols {
 			if cell {
 				p.spr.SetPosition(
@@ -186,13 +178,14 @@ func (p *Piece) Valid() bool {
 	if p.col < 0 {
 		return false
 	}
-	if p.col+len(p.cells[0]) > len(p.board.grid[0]) {
+	cells := orientations[p.typ][p.orientation]
+	if p.col+len(cells[0]) > len(p.board.grid[0]) {
 		return false
 	}
-	if p.row+len(p.cells) > len(p.board.grid) {
+	if p.row+len(cells) > len(p.board.grid) {
 		return false
 	}
-	for row, cols := range p.cells {
+	for row, cols := range cells {
 		for col, cell := range cols {
 			if cell && p.board.grid[p.row+row][p.col+col] {
 				return false
@@ -204,11 +197,12 @@ func (p *Piece) Valid() bool {
 
 func (p *Piece) Copy() *Piece {
 	return &Piece{
-		spr:   p.spr,
-		board: p.board,
-		row:   p.row,
-		col:   p.col,
-		cells: p.cells,
+		spr:         p.spr,
+		board:       p.board,
+		row:         p.row,
+		col:         p.col,
+		typ:         p.typ,
+		orientation: p.orientation,
 	}
 }
 
@@ -237,4 +231,29 @@ func (i Input) String() string {
 	default:
 		return "unknown"
 	}
+}
+
+type Orientation [][]bool
+
+var orientations = map[string][]Orientation{
+	"L": {
+		{
+			{true, false, false},
+			{true, true, true},
+		},
+		{
+			{true, true},
+			{true, false},
+			{true, false},
+		},
+		{
+			{true, true, true},
+			{false, false, true},
+		},
+		{
+			{false, true},
+			{false, true},
+			{true, true},
+		},
+	},
 }
