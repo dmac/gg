@@ -46,7 +46,6 @@ func main() {
 		gl.ClearColor(0.5, 0.5, 0.5, 1.0)
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
-		tetris.Update()
 		tetris.Draw()
 
 		time.Sleep(16 * time.Millisecond)

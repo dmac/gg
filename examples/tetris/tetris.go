@@ -33,15 +33,13 @@ func NewTetris(windowWidth, windowHeight int) *Tetris {
 		ticker: time.NewTicker(time.Second),
 	}
 
-	return t
-}
+	go func() {
+		for range time.NewTicker(time.Second).C {
+			t.HandleInput(inputDown)
+		}
+	}()
 
-func (t *Tetris) Update() {
-	select {
-	case <-t.ticker.C:
-		t.HandleInput(inputDown)
-	default:
-	}
+	return t
 }
 
 func (t *Tetris) Draw() {
@@ -70,7 +68,6 @@ func (t *Tetris) HandleInput(input Input) {
 		t.board.current = movedPiece
 		return
 	}
-	// Anchor piece, clear lines, new piece
 	if input == inputDown {
 		t.board.AnchorCurrent()
 		cleared := t.board.ClearLines()
@@ -182,7 +179,6 @@ func (b *Board) Draw() {
 }
 
 type Piece struct {
-	spr         *gg.Sprite
 	board       *Board
 	row, col    int
 	typ         string
@@ -190,37 +186,16 @@ type Piece struct {
 }
 
 func NewPiece(board *Board) *Piece {
-	var typ, color string
-	switch rand.Intn(len(orientations)) {
-	case 0:
-		typ = "L"
-		color = "orange"
-	case 1:
-		typ = "J"
-		color = "blue"
-	case 2:
-		typ = "O"
-		color = "yellow"
-	case 3:
-		typ = "I"
-		color = "cyan"
-	case 4:
-		typ = "S"
-		color = "green"
-	case 5:
-		typ = "Z"
-		color = "red"
-	case 6:
-		typ = "T"
-		color = "purple"
+	var typs []string
+	for typ := range orientations {
+		typs = append(typs, typ)
 	}
 
 	return &Piece{
-		spr:         gg.NewSpriteFromTexture(textures[color]),
 		row:         1,
 		col:         2,
 		board:       board,
-		typ:         typ,
+		typ:         typs[rand.Intn(len(typs))],
 		orientation: 0,
 	}
 }
@@ -231,11 +206,12 @@ func (p *Piece) Draw() {
 	for row, cols := range cells {
 		for col, cell := range cols {
 			if cell {
-				p.spr.SetPosition(
+				spr := p.board.sprs[p.typ]
+				spr.SetPosition(
 					boardPosition[0]+float32(cellsize*(p.col+col)),
 					boardPosition[1]+float32(cellsize*(p.row+row)),
 				)
-				p.spr.Draw()
+				spr.Draw()
 			}
 		}
 	}
@@ -267,7 +243,6 @@ func (p *Piece) Valid() bool {
 
 func (p *Piece) Copy() *Piece {
 	return &Piece{
-		spr:         p.spr,
 		board:       p.board,
 		row:         p.row,
 		col:         p.col,
