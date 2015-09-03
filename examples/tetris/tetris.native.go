@@ -81,11 +81,13 @@ var textures map[string]*gg.Texture
 
 func loadTextures() {
 	textures = make(map[string]*gg.Texture)
-	img, err := openPNG("orange.png")
-	if err != nil {
-		fmt.Println(err)
-	} else {
-		textures["orange"] = gg.NewTextureFromImage(img)
+	for _, color := range []string{"blue", "cyan", "green", "orange", "purple", "red", "yellow"} {
+		img, err := openPNG(color + ".png")
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
+		textures[color] = gg.NewTextureFromImage(img)
 	}
 }
 

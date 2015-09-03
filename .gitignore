@@ -3,5 +3,5 @@
 /examples/basic/basic
 /examples/tetris/*.js
 /examples/tetris/*.js.map
-/examples/tetris/orange.pxi
+/examples/tetris/block.pxi
 /examples/tetris/tetris

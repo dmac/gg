@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math/rand"
 	"time"
 
 	"github.com/dmac/gg"
@@ -12,7 +13,7 @@ type Tetris struct {
 	board    *Board
 	gameOver bool
 	ticker   *time.Ticker
-	score int
+	score    int
 }
 
 func NewTetris(windowWidth, windowHeight int) *Tetris {
@@ -88,7 +89,7 @@ func (t *Tetris) HandleInput(input Input) {
 type Board struct {
 	bg      *gg.Poly
 	sprs    map[string]*gg.Sprite
-	grid    [][]bool
+	grid    [][]string
 	current *Piece
 }
 
@@ -103,9 +104,9 @@ func NewBoard(width, height int) *Board {
 	})
 	bg.SetColor(0, 0, 0, 1)
 
-	grid := make([][]bool, height)
+	grid := make([][]string, height)
 	for i := 0; i < height; i++ {
-		grid[i] = make([]bool, width)
+		grid[i] = make([]string, width)
 	}
 
 	board := &Board{
@@ -114,7 +115,13 @@ func NewBoard(width, height int) *Board {
 		sprs: make(map[string]*gg.Sprite),
 	}
 	board.current = NewPiece(board)
-	board.sprs["orange"] = gg.NewSpriteFromTexture(textures["orange"])
+	board.sprs["I"] = gg.NewSpriteFromTexture(textures["cyan"])
+	board.sprs["J"] = gg.NewSpriteFromTexture(textures["blue"])
+	board.sprs["L"] = gg.NewSpriteFromTexture(textures["orange"])
+	board.sprs["S"] = gg.NewSpriteFromTexture(textures["green"])
+	board.sprs["Z"] = gg.NewSpriteFromTexture(textures["red"])
+	board.sprs["O"] = gg.NewSpriteFromTexture(textures["yellow"])
+	board.sprs["T"] = gg.NewSpriteFromTexture(textures["purple"])
 
 	return board
 }
@@ -124,7 +131,7 @@ func (b *Board) AnchorCurrent() {
 	for row, cols := range cells {
 		for col, cell := range cols {
 			if cell {
-				b.current.board.grid[b.current.row+row][b.current.col+col] = true
+				b.current.board.grid[b.current.row+row][b.current.col+col] = b.current.typ
 			}
 		}
 	}
@@ -134,7 +141,7 @@ func (b *Board) ClearLines() (cleared int) {
 	for row := len(b.grid) - 1; row >= 0; {
 		full := true
 		for _, cell := range b.grid[row] {
-			if !cell {
+			if cell == "" {
 				full = false
 				break
 			}
@@ -150,7 +157,7 @@ func (b *Board) ClearLines() (cleared int) {
 			}
 		}
 		for c := 0; c < len(b.grid[0]); c++ {
-			b.grid[0][c] = false
+			b.grid[0][c] = ""
 		}
 	}
 	return
@@ -162,8 +169,8 @@ func (b *Board) Draw() {
 
 	for row, cols := range b.grid {
 		for col, cell := range cols {
-			if cell {
-				spr := b.sprs["orange"]
+			if cell != "" {
+				spr := b.sprs[b.grid[row][col]]
 				spr.SetPosition(
 					b.bg.Position[0]+float32(cellsize*col),
 					b.bg.Position[1]+float32(cellsize*row),
@@ -183,12 +190,37 @@ type Piece struct {
 }
 
 func NewPiece(board *Board) *Piece {
+	var typ, color string
+	switch rand.Intn(len(orientations)) {
+	case 0:
+		typ = "L"
+		color = "orange"
+	case 1:
+		typ = "J"
+		color = "blue"
+	case 2:
+		typ = "O"
+		color = "yellow"
+	case 3:
+		typ = "I"
+		color = "cyan"
+	case 4:
+		typ = "S"
+		color = "green"
+	case 5:
+		typ = "Z"
+		color = "red"
+	case 6:
+		typ = "T"
+		color = "purple"
+	}
+
 	return &Piece{
-		spr:         gg.NewSpriteFromTexture(textures["orange"]),
+		spr:         gg.NewSpriteFromTexture(textures[color]),
 		row:         1,
 		col:         2,
 		board:       board,
-		typ:         "L",
+		typ:         typ,
 		orientation: 0,
 	}
 }
@@ -225,7 +257,7 @@ func (p *Piece) Valid() bool {
 	}
 	for row, cols := range cells {
 		for col, cell := range cols {
-			if cell && p.board.grid[p.row+row][p.col+col] {
+			if cell && p.board.grid[p.row+row][p.col+col] != "" {
 				return false
 			}
 		}
@@ -292,6 +324,85 @@ var orientations = map[string][]Orientation{
 			{false, true},
 			{false, true},
 			{true, true},
+		},
+	},
+	"J": {
+		{
+			{false, false, true},
+			{true, true, true},
+		},
+		{
+			{true, false},
+			{true, false},
+			{true, true},
+		},
+		{
+			{true, true, true},
+			{true, false, false},
+		},
+		{
+			{true, true},
+			{false, true},
+			{false, true},
+		},
+	},
+	"O": {
+		{
+			{true, true},
+			{true, true},
+		},
+	},
+	"I": {
+		{
+			{true, true, true, true},
+		},
+		{
+			{true},
+			{true},
+			{true},
+			{true},
+		},
+	},
+	"S": {
+		{
+			{false, true, true},
+			{true, true, false},
+		},
+		{
+			{true, false},
+			{true, true},
+			{false, true},
+		},
+	},
+	"Z": {
+		{
+			{true, true, false},
+			{false, true, true},
+		},
+		{
+			{false, true},
+			{true, true},
+			{true, false},
+		},
+	},
+	"T": {
+		{
+			{false, true, false},
+			{true, true, true},
+		},
+		{
+			{true, false},
+			{true, true},
+			{true, false},
+		},
+		{
+			{true, true, true},
+			{false, true, false},
+		},
+		{
+			{false, true},
+			{true, true},
+			{false, true},
 		},
 	},
 }

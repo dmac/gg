@@ -76,7 +76,13 @@ var textures map[string]*gg.Texture
 
 func loadTextures() {
 	textures = make(map[string]*gg.Texture)
+	textures["blue"] = gg.NewTextureFromImage(openImage("blue.png"))
+	textures["cyan"] = gg.NewTextureFromImage(openImage("cyan.png"))
+	textures["green"] = gg.NewTextureFromImage(openImage("green.png"))
 	textures["orange"] = gg.NewTextureFromImage(openImage("orange.png"))
+	textures["purple"] = gg.NewTextureFromImage(openImage("purple.png"))
+	textures["red"] = gg.NewTextureFromImage(openImage("red.png"))
+	textures["yellow"] = gg.NewTextureFromImage(openImage("yellow.png"))
 }
 
 func openImage(path string) *js.Object {
