@@ -6,11 +6,8 @@ import (
 	mgl "github.com/go-gl/mathgl/mgl32"
 )
 
-type Vec2 mgl.Vec2
-type Vec3 mgl.Vec3
-type Vec4 mgl.Vec4
 type Rect struct {
-	Min, Max Vec2
+	Min, Max [2]float32
 }
 
 type Poly struct {
@@ -21,7 +18,7 @@ type Poly struct {
 	// TODO(dmac) color
 }
 
-func NewPoly(vertices []Vec2) *Poly {
+func NewPoly(vertices [][2]float32) *Poly {
 	aabb := computeAABB(vertices)
 	p := &Poly{
 		transformable: transformable{
@@ -86,7 +83,7 @@ type Texture struct {
 
 type transformable struct {
 	// TODO(dmac) origin Vec2
-	position Vec2
+	position [2]float32
 	rotation float32
 	scale    float32
 }
@@ -117,7 +114,7 @@ func (t *transformable) Scale(factor float32) {
 	t.scale *= factor
 }
 
-func computeAABB(vs []Vec2) Rect {
+func computeAABB(vs [][2]float32) Rect {
 	if len(vs) < 3 {
 		panic(fmt.Errorf("can't compute bounding box for %d vertices", len(vs)))
 	}

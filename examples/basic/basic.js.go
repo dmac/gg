@@ -33,7 +33,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	triangle := gg.NewPoly([]gg.Vec2{
+	triangle := gg.NewPoly([][2]float32{
 		{320, 100},
 		{240, 200},
 		{400, 200},

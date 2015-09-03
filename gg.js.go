@@ -79,7 +79,7 @@ func Init(canvasWidth, canvasHeight int, glContext *webgl.Context) error {
 	return nil
 }
 
-func (p *Poly) init(vertices []Vec2) {
+func (p *Poly) init(vertices [][2]float32) {
 	p.program = program
 
 	var mesh []float32
@@ -124,7 +124,7 @@ func (s *Sprite) init() {
 
 	vmesh := []float32{
 		0, 0, 0,
-		0, s.W, 0,
+		0, s.H, 0,
 		s.W, s.H, 0,
 		s.W, 0, 0,
 	}

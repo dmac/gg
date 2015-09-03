@@ -80,17 +80,14 @@ func Init(windowWidth, windowHeight int) error {
 	return nil
 }
 
-func (p *Poly) init(vertices []Vec2) {
+func (p *Poly) init(vertices [][2]float32) {
 	p.program = program
 
-	var mesh []Vec3
+	var mesh []float32
 	for _, vertex := range vertices {
-		v := Vec3{
-			vertex[0] - p.position[0],
-			vertex[1] - p.position[1],
-			0,
-		}
-		mesh = append(mesh, v)
+		mesh = append(mesh, vertex[0] - p.position[0])
+		mesh = append(mesh, vertex[1] - p.position[1])
+		mesh = append(mesh, 0)
 	}
 
 	var vbo uint32
@@ -98,7 +95,7 @@ func (p *Poly) init(vertices []Vec2) {
 	gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
 	gl.BufferData(
 		gl.ARRAY_BUFFER,
-		len(mesh)*int(unsafe.Sizeof(Vec3{})),
+		len(mesh)*int(unsafe.Sizeof(mesh[0])),
 		gl.Ptr(mesh),
 		gl.STATIC_DRAW,
 	)
@@ -132,34 +129,34 @@ func (p *Poly) Draw() {
 func (s *Sprite) init() {
 	s.program = program
 
-	vmesh := []Vec3{
-		{0, 0},
-		{0, s.H},
-		{s.W, s.H},
-		{s.W, 0},
+	vmesh := []float32{
+		0, 0, 0,
+		0, s.H, 0,
+		s.W, s.H, 0,
+		s.W, 0, 0,
 	}
 	var vvbo uint32
 	gl.GenBuffers(1, &vvbo)
 	gl.BindBuffer(gl.ARRAY_BUFFER, vvbo)
 	gl.BufferData(
 		gl.ARRAY_BUFFER,
-		len(vmesh)*int(unsafe.Sizeof(Vec3{})),
+		len(vmesh)*int(unsafe.Sizeof(vmesh[0])),
 		gl.Ptr(vmesh),
 		gl.STATIC_DRAW,
 	)
 
-	tmesh := []Vec2{
-		{0, 0},
-		{0, 1},
-		{1, 1},
-		{1, 0},
+	tmesh := []float32{
+		0, 0,
+		0, 1,
+		1, 1,
+		1, 0,
 	}
 	var tvbo uint32
 	gl.GenBuffers(1, &tvbo)
 	gl.BindBuffer(gl.ARRAY_BUFFER, tvbo)
 	gl.BufferData(
 		gl.ARRAY_BUFFER,
-		len(tmesh)*int(unsafe.Sizeof(Vec2{})),
+		len(tmesh)*int(unsafe.Sizeof(tmesh[0])),
 		gl.Ptr(tmesh),
 		gl.STATIC_DRAW,
 	)
