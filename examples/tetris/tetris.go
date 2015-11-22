@@ -5,7 +5,7 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/dmac/gg"
+	"github.com/dmac/gg/v2.1/gg"
 )
 
 type Tetris struct {

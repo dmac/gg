@@ -10,7 +10,7 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/dmac/gg"
+	"github.com/dmac/gg/v2.1/gg"
 	"github.com/go-gl/gl/v2.1/gl"
 	"github.com/go-gl/glfw/v3.1/glfw"
 )

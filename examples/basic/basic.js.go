@@ -6,8 +6,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/dmac/gg"
-
+	"github.com/dmac/gg/v2.1/gg"
 	"github.com/gopherjs/gopherjs/js"
 	"github.com/gopherjs/webgl"
 )
