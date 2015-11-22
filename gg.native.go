@@ -8,18 +8,18 @@ import (
 	"strings"
 	"unsafe"
 
-	"github.com/go-gl/gl/v3.3-core/gl"
+	"github.com/go-gl/gl/v2.1/gl"
 	mgl "github.com/go-gl/mathgl/mgl32"
 )
 
 var program uint32
 
-const vertexShader = `#version 330
+const vertexShader = `#version 120
 
 uniform mat4 proj, view, model;
-in vec3 vertex_position;
-in vec2 vertex_texture;
-out vec2 texture_coordinates;
+attribute vec3 vertex_position;
+attribute vec2 vertex_texture;
+varying vec2 texture_coordinates;
 
 void main() {
 	gl_Position = proj * view * model * vec4(vertex_position, 1);
@@ -27,31 +27,31 @@ void main() {
 }
 `
 
-const fragmentShader = `#version 330
+const fragmentShader = `#version 120
 
 uniform sampler2D tex_loc;
 uniform float mix_value;
 uniform vec4 color;
-in vec2 texture_coordinates;
-out vec4 frag_color;
+varying vec2 texture_coordinates;
 
 void main() {
-	frag_color = mix(
+	gl_FragColor = mix(
 		color,
-		texture(tex_loc, texture_coordinates),
+		texture2D(tex_loc, texture_coordinates),
 		mix_value
 	);
 }
 `
 
 type polyBackend struct {
-	vao     uint32
 	program uint32
+	vvbo    uint32
 }
 
 type spriteBackend struct {
-	vao     uint32
 	program uint32
+	vvbo    uint32
+	tvbo    uint32
 }
 
 type textureBackend struct {
@@ -85,28 +85,19 @@ func (p *Poly) init(vertices [][2]float32) {
 
 	var mesh []float32
 	for _, vertex := range vertices {
-		mesh = append(mesh, vertex[0] - p.Position[0])
-		mesh = append(mesh, vertex[1] - p.Position[1])
+		mesh = append(mesh, vertex[0]-p.Position[0])
+		mesh = append(mesh, vertex[1]-p.Position[1])
 		mesh = append(mesh, 0)
 	}
 
-	var vbo uint32
-	gl.GenBuffers(1, &vbo)
-	gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
+	gl.GenBuffers(1, &p.vvbo)
+	gl.BindBuffer(gl.ARRAY_BUFFER, p.vvbo)
 	gl.BufferData(
 		gl.ARRAY_BUFFER,
 		len(mesh)*int(unsafe.Sizeof(mesh[0])),
 		gl.Ptr(mesh),
 		gl.STATIC_DRAW,
 	)
-
-	gl.GenVertexArrays(1, &p.vao)
-	gl.BindVertexArray(p.vao)
-
-	vattrib := uint32(gl.GetAttribLocation(p.program, gl.Str("vertex_position\x00")))
-	gl.EnableVertexAttribArray(vattrib)
-	gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
-	gl.VertexAttribPointer(vattrib, 3, gl.FLOAT, false, 0, gl.PtrOffset(0))
 }
 
 func (p *Poly) Draw() {
@@ -122,7 +113,11 @@ func (p *Poly) Draw() {
 	colorUniform := gl.GetUniformLocation(p.program, gl.Str("color\x00"))
 	gl.Uniform4f(colorUniform, p.color[0], p.color[1], p.color[2], p.color[3])
 
-	gl.BindVertexArray(p.vao)
+	vattrib := uint32(gl.GetAttribLocation(p.program, gl.Str("vertex_position\x00")))
+	gl.EnableVertexAttribArray(vattrib)
+	gl.BindBuffer(gl.ARRAY_BUFFER, p.vvbo)
+	gl.VertexAttribPointer(vattrib, 3, gl.FLOAT, false, 0, gl.PtrOffset(0))
+
 	gl.DrawArrays(gl.TRIANGLE_FAN, 0, p.n)
 }
 
@@ -135,9 +130,8 @@ func (s *Sprite) init() {
 		s.W, s.H, 0,
 		s.W, 0, 0,
 	}
-	var vvbo uint32
-	gl.GenBuffers(1, &vvbo)
-	gl.BindBuffer(gl.ARRAY_BUFFER, vvbo)
+	gl.GenBuffers(1, &s.vvbo)
+	gl.BindBuffer(gl.ARRAY_BUFFER, s.vvbo)
 	gl.BufferData(
 		gl.ARRAY_BUFFER,
 		len(vmesh)*int(unsafe.Sizeof(vmesh[0])),
@@ -151,28 +145,14 @@ func (s *Sprite) init() {
 		1, 1,
 		1, 0,
 	}
-	var tvbo uint32
-	gl.GenBuffers(1, &tvbo)
-	gl.BindBuffer(gl.ARRAY_BUFFER, tvbo)
+	gl.GenBuffers(1, &s.tvbo)
+	gl.BindBuffer(gl.ARRAY_BUFFER, s.tvbo)
 	gl.BufferData(
 		gl.ARRAY_BUFFER,
 		len(tmesh)*int(unsafe.Sizeof(tmesh[0])),
 		gl.Ptr(tmesh),
 		gl.STATIC_DRAW,
 	)
-
-	gl.GenVertexArrays(1, &s.vao)
-	gl.BindVertexArray(s.vao)
-
-	vattrib := uint32(gl.GetAttribLocation(s.program, gl.Str("vertex_position\x00")))
-	gl.EnableVertexAttribArray(vattrib)
-	gl.BindBuffer(gl.ARRAY_BUFFER, vvbo)
-	gl.VertexAttribPointer(vattrib, 3, gl.FLOAT, false, 0, gl.PtrOffset(0))
-
-	tattrib := uint32(gl.GetAttribLocation(s.program, gl.Str("vertex_texture\x00")))
-	gl.EnableVertexAttribArray(tattrib)
-	gl.BindBuffer(gl.ARRAY_BUFFER, tvbo)
-	gl.VertexAttribPointer(tattrib, 2, gl.FLOAT, false, 0, gl.PtrOffset(0))
 }
 
 func (s *Sprite) Draw() {
@@ -190,7 +170,16 @@ func (s *Sprite) Draw() {
 	mixUniform := gl.GetUniformLocation(s.program, gl.Str("mix_value\x00"))
 	gl.Uniform1f(mixUniform, 1.0)
 
-	gl.BindVertexArray(s.vao)
+	vattrib := uint32(gl.GetAttribLocation(s.program, gl.Str("vertex_position\x00")))
+	gl.EnableVertexAttribArray(vattrib)
+	gl.BindBuffer(gl.ARRAY_BUFFER, s.vvbo)
+	gl.VertexAttribPointer(vattrib, 3, gl.FLOAT, false, 0, gl.PtrOffset(0))
+
+	tattrib := uint32(gl.GetAttribLocation(s.program, gl.Str("vertex_texture\x00")))
+	gl.EnableVertexAttribArray(tattrib)
+	gl.BindBuffer(gl.ARRAY_BUFFER, s.tvbo)
+	gl.VertexAttribPointer(tattrib, 2, gl.FLOAT, false, 0, gl.PtrOffset(0))
+
 	gl.DrawArrays(gl.TRIANGLE_FAN, 0, 4)
 }
 

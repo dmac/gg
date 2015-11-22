@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/dmac/gg"
-	"github.com/go-gl/gl/v3.3-core/gl"
+	"github.com/go-gl/gl/v2.1/gl"
 	"github.com/go-gl/glfw/v3.1/glfw"
 )
 
@@ -25,10 +25,10 @@ func main() {
 	}
 	defer glfw.Terminate()
 
-	glfw.WindowHint(glfw.ContextVersionMajor, 3)
-	glfw.WindowHint(glfw.ContextVersionMinor, 2)
-	glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
-	glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
+	//glfw.WindowHint(glfw.ContextVersionMajor, 3)
+	//glfw.WindowHint(glfw.ContextVersionMinor, 2)
+	//glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
+	//glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
 
 	if err := gl.Init(); err != nil {
 		log.Fatal(err)
