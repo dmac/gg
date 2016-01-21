@@ -2,9 +2,138 @@ package gg
 
 import (
 	"fmt"
+	"strings"
 
+	"github.com/dmac/gg"
+	"github.com/go-gl/gl/v2.1/gl"
 	mgl "github.com/go-gl/mathgl/mgl32"
 )
+
+type backend struct{}
+
+var _ gg.Backend = (*backend)(nil)
+
+func init() {
+	gg.Register(&backend{})
+}
+
+func (*backend) Enable(e gg.Enum) {
+	gl.Enable(uint32(e))
+}
+
+func (*backend) DepthFunc(f gg.Enum) {
+	gl.DepthFunc(uint32(f))
+}
+
+func (*backend) BlendFunc(sfactor, dfactor gg.Enum) {
+	gl.BlendFunc(uint32(sfactor), uint32(dfactor))
+}
+
+func (*backend) Clear(mask gg.Enum) {
+	gl.Clear(uint32(mask))
+}
+
+func (*backend) ClearColor(r, g, b, a float32) {
+	gl.ClearColor(r, g, b, a)
+}
+
+func (*backend) CreateBuffer() *gg.Buffer {
+	buffer := &gg.Buffer{}
+	gl.GenBuffers(1, &buffer.Value)
+	return buffer
+}
+
+func (*backend) BindBuffer(typ gg.Enum, b *gg.Buffer) {
+	gl.BindBuffer(uint32(typ), b.Value)
+}
+
+func (*backend) BufferData(typ gg.Enum, src []byte, usage gg.Enum) {
+	gl.BufferData(uint32(typ), len(src), gl.Ptr(src), uint32(usage))
+}
+
+func (*backend) CreateShader(src []byte, typ gg.Enum) (*gg.Shader, error) {
+	csrc := gl.Str(string(append([]byte(src), 0)))
+	shader := gl.CreateShader(uint32(typ))
+	gl.ShaderSource(shader, 1, &csrc, nil)
+	gl.CompileShader(shader)
+	var status int32
+	gl.GetShaderiv(shader, gl.COMPILE_STATUS, &status)
+	if status == gl.TRUE {
+		return &gg.Shader{Value: shader}, nil
+	}
+	var logLength int32
+	gl.GetShaderiv(shader, gl.INFO_LOG_LENGTH, &logLength)
+	log := strings.Repeat("\x00", int(logLength+1))
+	gl.GetShaderInfoLog(shader, logLength, nil, gl.Str(log))
+	return nil, fmt.Errorf("compile shader: %s%s", src, log)
+}
+
+func (*backend) CreateProgram() *gg.Program {
+	p := gl.CreateProgram()
+	return &gg.Program{Value: p}
+}
+
+func (*backend) AttachShader(p *gg.Program, s *gg.Shader) {
+	gl.AttachShader(p.Value, s.Value)
+}
+
+func (*backend) LinkProgram(p *gg.Program) error {
+	gl.LinkProgram(p.Value)
+	var status int32
+	gl.GetProgramiv(p.Value, gl.LINK_STATUS, &status)
+	if status == gl.TRUE {
+		return nil
+	}
+	var logLength int32
+	gl.GetProgramiv(p.Value, gl.INFO_LOG_LENGTH, &logLength)
+	log := strings.Repeat("\x00", int(logLength+1))
+	gl.GetProgramInfoLog(p.Value, logLength, nil, gl.Str(log))
+	return fmt.Errorf("link program: %s", log)
+}
+
+func (*backend) UseProgram(p *gg.Program) {
+	gl.UseProgram(p.Value)
+}
+
+func (*backend) GetUniformLocation(p *gg.Program, name string) (*gg.Uniform, error) {
+	u := gl.GetUniformLocation(p.Value, gl.Str(name+"\x00"))
+	if u < 0 {
+		return nil, fmt.Errorf("gg: no uniform named " + name)
+	}
+	return &gg.Uniform{Value: u}, nil
+}
+
+func (*backend) Uniform1f(u *gg.Uniform, v0 float32) {
+	gl.Uniform1f(u.Value, v0)
+}
+
+func (*backend) Uniform4f(u *gg.Uniform, v0, v1, v2, v3 float32) {
+	gl.Uniform4f(u.Value, v0, v1, v2, v3)
+}
+
+func (*backend) UniformMatrix4fv(u *gg.Uniform, values []float32) {
+	gl.UniformMatrix4fv(u.Value, 1, false, &values[0])
+}
+
+func (*backend) GetAttribLocation(p *gg.Program, name string) (*gg.Attribute, error) {
+	a := gl.GetAttribLocation(p.Value, gl.Str(name+"\x00"))
+	if a < 0 {
+		return nil, fmt.Errorf("gg: no attribute named " + name)
+	}
+	return &gg.Attribute{Value: uint32(a)}, nil
+}
+
+func (*backend) EnableVertexAttribArray(a *gg.Attribute) {
+	gl.EnableVertexAttribArray(a.Value)
+}
+
+func (*backend) VertexAttribArrayPointer(a *gg.Attribute, size int32, typ gg.Enum, normalized bool, stride, offset int32) {
+	gl.VertexAttribPointer(a.Value, size, uint32(typ), normalized, stride, gl.PtrOffset(int(offset)))
+}
+
+func (*backend) DrawArrays(mode gg.Enum, first, count int32) {
+	gl.DrawArrays(uint32(mode), first, count)
+}
 
 type Rect struct {
 	Min, Max [2]float32
@@ -15,7 +144,6 @@ type Poly struct {
 	polyBackend
 	color [4]float32
 	n     int32
-	// TODO(dmac) color
 }
 
 func NewPoly(vertices [][2]float32) *Poly {
@@ -26,7 +154,7 @@ func NewPoly(vertices [][2]float32) *Poly {
 			scale:    1,
 		},
 		color: [4]float32{0, 0, 0, 1},
-		n: int32(len(vertices)),
+		n:     int32(len(vertices)),
 	}
 	p.init(vertices)
 	return p
