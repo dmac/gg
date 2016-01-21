@@ -16,11 +16,25 @@ type Backend interface {
 	UseProgram(*Program)
 	GetUniformLocation(*Program, string) (*Uniform, error)
 	Uniform1f(*Uniform, float32)
+	Uniform1i(*Uniform, int)
 	Uniform4f(*Uniform, float32, float32, float32, float32)
 	UniformMatrix4fv(*Uniform, []float32)
 	GetAttribLocation(*Program, string) (*Attribute, error)
 	EnableVertexAttribArray(*Attribute)
-	VertexAttribArrayPointer(a *Attribute, size int, typ Enum, normalized bool, stride, offset int)
+	VertexAttribPointer(
+		a *Attribute, size int, typ Enum, normalized bool,
+		stride, offset int,
+	)
+	CreateTexture() *Texture
+	ActiveTexture(tex Enum)
+	BindTexture(target Enum, texture *Texture)
+	TexImage2D(
+		target Enum, level int, internalFormat Enum,
+		width, height, border int,
+		format, typ Enum,
+		data interface{},
+	)
+	TexParameteri(target Enum, pname Enum, param Enum)
 	DrawArrays(mode Enum, first, count int)
 }
 
@@ -41,6 +55,10 @@ type Uniform struct {
 }
 
 type Attribute struct {
+	Value interface{}
+}
+
+type Texture struct {
 	Value interface{}
 }
 
@@ -122,6 +140,10 @@ func Uniform4f(u *Uniform, v0, v1, v2, v3 float32) {
 	backend.Uniform4f(u, v0, v1, v2, v3)
 }
 
+func Uniform1i(u *Uniform, v0 int) {
+	backend.Uniform1i(u, v0)
+}
+
 func UniformMatrix4fv(u *Uniform, value []float32) {
 	backend.UniformMatrix4fv(u, value)
 }
@@ -134,8 +156,38 @@ func EnableVertexAttribArray(a *Attribute) {
 	backend.EnableVertexAttribArray(a)
 }
 
-func VertexAttribArrayPointer(a *Attribute, size int, typ Enum, normalized bool, stride, offset int) {
-	backend.VertexAttribArrayPointer(a, size, typ, normalized, stride, offset)
+func VertexAttribPointer(a *Attribute, size int, typ Enum, normalized bool, stride, offset int) {
+	backend.VertexAttribPointer(a, size, typ, normalized, stride, offset)
+}
+
+func CreateTexture() *Texture {
+	return backend.CreateTexture()
+}
+
+func ActiveTexture(tex Enum) {
+	backend.ActiveTexture(tex)
+}
+
+func BindTexture(target Enum, texture *Texture) {
+	backend.BindTexture(target, texture)
+}
+
+func TexImage2D(
+	target Enum, level int, internalFormat Enum,
+	width, height, border int,
+	format, typ Enum,
+	data interface{},
+) {
+	backend.TexImage2D(
+		target, level, internalFormat,
+		width, height, border,
+		format, typ,
+		data,
+	)
+}
+
+func TexParameteri(target Enum, pname Enum, param Enum) {
+	backend.TexParameteri(target, pname, param)
 }
 
 func DrawArrays(mode Enum, first, count int) {

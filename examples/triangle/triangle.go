@@ -81,7 +81,7 @@ func NewTriangle(vertices []float32, program *gg.Program) (*Triangle, error) {
 	gg.BindBuffer(gg.ARRAY_BUFFER, vbo)
 	gg.BufferData(gg.ARRAY_BUFFER, buf.Bytes(), gg.STATIC_DRAW)
 	return &Triangle{
-		vbo: vbo,
+		vbo:     vbo,
 		program: program,
 	}, nil
 }
@@ -100,6 +100,6 @@ func (t *Triangle) Draw() {
 	}
 	gg.EnableVertexAttribArray(vattrib)
 	gg.BindBuffer(gg.ARRAY_BUFFER, t.vbo)
-	gg.VertexAttribArrayPointer(vattrib, 3, gg.FLOAT, false, 0, 0)
+	gg.VertexAttribPointer(vattrib, 3, gg.FLOAT, false, 0, 0)
 	gg.DrawArrays(gg.TRIANGLE_FAN, 0, 3)
 }

@@ -22,7 +22,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	window, err := glfw.CreateWindow(WindowWidth, WindowHeight, "Basic", nil, nil)
+	window, err := glfw.CreateWindow(WindowWidth, WindowHeight, "Triangle Demo", nil, nil)
 	if err != nil {
 		log.Fatal(err)
 	}

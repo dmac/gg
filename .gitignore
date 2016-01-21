@@ -8,3 +8,6 @@
 /examples/triangle/*.js
 /examples/triangle/*.js.map
 /examples/triangle/triangle
+/examples/texture/*.js
+/examples/texture/*.js.map
+/examples/texture/texture

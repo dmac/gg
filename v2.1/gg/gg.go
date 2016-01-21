@@ -108,6 +108,10 @@ func (*backend) Uniform1f(u *gg.Uniform, v0 float32) {
 	gl.Uniform1f(u.Value.(int32), v0)
 }
 
+func (*backend) Uniform1i(u *gg.Uniform, v0 int) {
+	gl.Uniform1i(u.Value.(int32), int32(v0))
+}
+
 func (*backend) Uniform4f(u *gg.Uniform, v0, v1, v2, v3 float32) {
 	gl.Uniform4f(u.Value.(int32), v0, v1, v2, v3)
 }
@@ -128,7 +132,7 @@ func (*backend) EnableVertexAttribArray(a *gg.Attribute) {
 	gl.EnableVertexAttribArray(a.Value.(uint32))
 }
 
-func (*backend) VertexAttribArrayPointer(a *gg.Attribute, size int, typ gg.Enum, normalized bool, stride, offset int) {
+func (*backend) VertexAttribPointer(a *gg.Attribute, size int, typ gg.Enum, normalized bool, stride, offset int) {
 	gl.VertexAttribPointer(
 		a.Value.(uint32),
 		int32(size),
@@ -137,6 +141,38 @@ func (*backend) VertexAttribArrayPointer(a *gg.Attribute, size int, typ gg.Enum,
 		int32(stride),
 		gl.PtrOffset(offset),
 	)
+}
+
+func (*backend) CreateTexture() *gg.Texture {
+	var t uint32
+	gl.GenTextures(1, &t)
+	return &gg.Texture{Value: t}
+}
+
+func (*backend) ActiveTexture(tex gg.Enum) {
+	gl.ActiveTexture(uint32(tex))
+}
+
+func (*backend) BindTexture(target gg.Enum, texture *gg.Texture) {
+	gl.BindTexture(uint32(target), texture.Value.(uint32))
+}
+
+func (*backend) TexImage2D(
+	target gg.Enum, level int, internalFormat gg.Enum,
+	width, height, border int,
+	format, typ gg.Enum,
+	data interface{},
+) {
+	gl.TexImage2D(
+		gl.TEXTURE_2D, int32(level), gl.RGBA,
+		int32(width), int32(height), int32(border),
+		gl.RGBA, gl.UNSIGNED_BYTE,
+		gl.Ptr(data.([]byte)),
+	)
+}
+
+func (*backend) TexParameteri(target gg.Enum, pname gg.Enum, param gg.Enum) {
+	gl.TexParameteri(uint32(target), uint32(pname), int32(param))
 }
 
 func (*backend) DrawArrays(mode gg.Enum, first, count int) {
