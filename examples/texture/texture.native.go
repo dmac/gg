@@ -54,7 +54,7 @@ void main() {
 }
 `
 
-	texture, err := newImageTexture("orange.png")
+	texture, err := newImageTexture("sq.png")
 	if err != nil {
 		log.Fatal(err)
 	}

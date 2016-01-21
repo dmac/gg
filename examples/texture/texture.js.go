@@ -50,7 +50,7 @@ void main() {
 }
 `
 
-	texture := newImageTexture("orange.png")
+	texture := newImageTexture("sq.png")
 	scene, err := NewScene(vertShader, fragShader, texture)
 	if err != nil {
 		log.Fatal(err)
