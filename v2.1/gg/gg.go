@@ -166,8 +166,8 @@ func (*backend) TexImage2D(
 	gl.TexImage2D(
 		gl.TEXTURE_2D, int32(level), gl.RGBA,
 		int32(width), int32(height), int32(border),
-		gl.RGBA, gl.UNSIGNED_BYTE,
-		gl.Ptr(data.([]byte)),
+		uint32(format), uint32(typ),
+		gl.Ptr(data),
 	)
 }
 
