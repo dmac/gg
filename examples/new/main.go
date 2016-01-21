@@ -12,40 +12,21 @@ import (
 const WindowWidth = 640
 const WindowHeight = 480
 
-const vertexShader = `#version 120
-
-uniform mat4 proj;
-attribute vec3 vertex_position;
-
-void main() {
-	gl_Position = proj * vec4(vertex_position, 1);
-}
-`
-
-const fragmentShader = `#version 120
-
-uniform vec4 color;
-
-void main() {
-	gl_FragColor = color;
-}
-`
-
 type Game struct {
 	triangle *Triangle
 }
 
-func NewGame() (*Game, error) {
+func NewGame(vertShader, fragShader string) (*Game, error) {
 	gg.Enable(gg.DEPTH_TEST)
 	gg.Enable(gg.CULL_FACE)
 	gg.DepthFunc(gg.LESS)
 
 	// Compile the global shader program
-	vshader, err := gg.CreateShader([]byte(vertexShader), gg.VERTEX_SHADER)
+	vshader, err := gg.CreateShader([]byte(vertShader), gg.VERTEX_SHADER)
 	if err != nil {
 		return nil, err
 	}
-	fshader, err := gg.CreateShader([]byte(fragmentShader), gg.FRAGMENT_SHADER)
+	fshader, err := gg.CreateShader([]byte(fragShader), gg.FRAGMENT_SHADER)
 	if err != nil {
 		return nil, err
 	}

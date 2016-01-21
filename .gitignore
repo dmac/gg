@@ -5,3 +5,6 @@
 /examples/tetris/*.js.map
 /examples/tetris/block.pxi
 /examples/tetris/tetris
+/examples/new/*.js
+/examples/new/*.js.map
+/examples/new/new

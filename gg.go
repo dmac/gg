@@ -20,28 +20,28 @@ type Backend interface {
 	UniformMatrix4fv(*Uniform, []float32)
 	GetAttribLocation(*Program, string) (*Attribute, error)
 	EnableVertexAttribArray(*Attribute)
-	VertexAttribArrayPointer(a *Attribute, size int32, typ Enum, normalized bool, stride, offset int32)
-	DrawArrays(mode Enum, first, count int32)
+	VertexAttribArrayPointer(a *Attribute, size int, typ Enum, normalized bool, stride, offset int)
+	DrawArrays(mode Enum, first, count int)
 }
 
 type Buffer struct {
-	Value uint32
+	Value interface{}
 }
 
 type Program struct {
-	Value uint32
+	Value interface{}
 }
 
 type Shader struct {
-	Value uint32
+	Value interface{}
 }
 
 type Uniform struct {
-	Value int32
+	Value interface{}
 }
 
 type Attribute struct {
-	Value uint32
+	Value interface{}
 }
 
 type Enum uint32
@@ -58,8 +58,8 @@ func Register(b Backend) {
 	backend = b
 }
 
-func Enable(e Enum) {
-	backend.Enable(e)
+func Enable(c Enum) {
+	backend.Enable(c)
 }
 
 func DepthFunc(f Enum) {
@@ -134,10 +134,10 @@ func EnableVertexAttribArray(a *Attribute) {
 	backend.EnableVertexAttribArray(a)
 }
 
-func VertexAttribArrayPointer(a *Attribute, size int32, typ Enum, normalized bool, stride, offset int32) {
+func VertexAttribArrayPointer(a *Attribute, size int, typ Enum, normalized bool, stride, offset int) {
 	backend.VertexAttribArrayPointer(a, size, typ, normalized, stride, offset)
 }
 
-func DrawArrays(mode Enum, first, count int32) {
+func DrawArrays(mode Enum, first, count int) {
 	backend.DrawArrays(mode, first, count)
 }

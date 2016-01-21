@@ -1,3 +1,5 @@
+// +build !js
+
 package main
 
 import (
@@ -26,7 +28,23 @@ func main() {
 	}
 	window.MakeContextCurrent()
 
-	game, err := NewGame()
+	const vertShader = `#version 120
+uniform mat4 proj;
+attribute vec3 vertex_position;
+
+void main() {
+	gl_Position = proj * vec4(vertex_position, 1);
+}
+`
+
+	const fragShader = `#version 120
+uniform vec4 color;
+
+void main() {
+	gl_FragColor = color;
+}
+`
+	game, err := NewGame(vertShader, fragShader)
 	if err != nil {
 		log.Fatal(err)
 	}

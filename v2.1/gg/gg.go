@@ -17,8 +17,8 @@ func init() {
 	gg.Register(&backend{})
 }
 
-func (*backend) Enable(e gg.Enum) {
-	gl.Enable(uint32(e))
+func (*backend) Enable(c gg.Enum) {
+	gl.Enable(uint32(c))
 }
 
 func (*backend) DepthFunc(f gg.Enum) {
@@ -38,13 +38,13 @@ func (*backend) ClearColor(r, g, b, a float32) {
 }
 
 func (*backend) CreateBuffer() *gg.Buffer {
-	buffer := &gg.Buffer{}
-	gl.GenBuffers(1, &buffer.Value)
-	return buffer
+	var b uint32
+	gl.GenBuffers(1, &b)
+	return &gg.Buffer{Value: b}
 }
 
 func (*backend) BindBuffer(typ gg.Enum, b *gg.Buffer) {
-	gl.BindBuffer(uint32(typ), b.Value)
+	gl.BindBuffer(uint32(typ), b.Value.(uint32))
 }
 
 func (*backend) BufferData(typ gg.Enum, src []byte, usage gg.Enum) {
@@ -74,29 +74,30 @@ func (*backend) CreateProgram() *gg.Program {
 }
 
 func (*backend) AttachShader(p *gg.Program, s *gg.Shader) {
-	gl.AttachShader(p.Value, s.Value)
+	gl.AttachShader(p.Value.(uint32), s.Value.(uint32))
 }
 
 func (*backend) LinkProgram(p *gg.Program) error {
-	gl.LinkProgram(p.Value)
+	pv := p.Value.(uint32)
+	gl.LinkProgram(pv)
 	var status int32
-	gl.GetProgramiv(p.Value, gl.LINK_STATUS, &status)
+	gl.GetProgramiv(pv, gl.LINK_STATUS, &status)
 	if status == gl.TRUE {
 		return nil
 	}
 	var logLength int32
-	gl.GetProgramiv(p.Value, gl.INFO_LOG_LENGTH, &logLength)
+	gl.GetProgramiv(pv, gl.INFO_LOG_LENGTH, &logLength)
 	log := strings.Repeat("\x00", int(logLength+1))
-	gl.GetProgramInfoLog(p.Value, logLength, nil, gl.Str(log))
+	gl.GetProgramInfoLog(pv, logLength, nil, gl.Str(log))
 	return fmt.Errorf("link program: %s", log)
 }
 
 func (*backend) UseProgram(p *gg.Program) {
-	gl.UseProgram(p.Value)
+	gl.UseProgram(p.Value.(uint32))
 }
 
 func (*backend) GetUniformLocation(p *gg.Program, name string) (*gg.Uniform, error) {
-	u := gl.GetUniformLocation(p.Value, gl.Str(name+"\x00"))
+	u := gl.GetUniformLocation(p.Value.(uint32), gl.Str(name+"\x00"))
 	if u < 0 {
 		return nil, fmt.Errorf("gg: no uniform named " + name)
 	}
@@ -104,19 +105,19 @@ func (*backend) GetUniformLocation(p *gg.Program, name string) (*gg.Uniform, err
 }
 
 func (*backend) Uniform1f(u *gg.Uniform, v0 float32) {
-	gl.Uniform1f(u.Value, v0)
+	gl.Uniform1f(u.Value.(int32), v0)
 }
 
 func (*backend) Uniform4f(u *gg.Uniform, v0, v1, v2, v3 float32) {
-	gl.Uniform4f(u.Value, v0, v1, v2, v3)
+	gl.Uniform4f(u.Value.(int32), v0, v1, v2, v3)
 }
 
 func (*backend) UniformMatrix4fv(u *gg.Uniform, values []float32) {
-	gl.UniformMatrix4fv(u.Value, 1, false, &values[0])
+	gl.UniformMatrix4fv(u.Value.(int32), 1, false, &values[0])
 }
 
 func (*backend) GetAttribLocation(p *gg.Program, name string) (*gg.Attribute, error) {
-	a := gl.GetAttribLocation(p.Value, gl.Str(name+"\x00"))
+	a := gl.GetAttribLocation(p.Value.(uint32), gl.Str(name+"\x00"))
 	if a < 0 {
 		return nil, fmt.Errorf("gg: no attribute named " + name)
 	}
@@ -124,15 +125,22 @@ func (*backend) GetAttribLocation(p *gg.Program, name string) (*gg.Attribute, er
 }
 
 func (*backend) EnableVertexAttribArray(a *gg.Attribute) {
-	gl.EnableVertexAttribArray(a.Value)
+	gl.EnableVertexAttribArray(a.Value.(uint32))
 }
 
-func (*backend) VertexAttribArrayPointer(a *gg.Attribute, size int32, typ gg.Enum, normalized bool, stride, offset int32) {
-	gl.VertexAttribPointer(a.Value, size, uint32(typ), normalized, stride, gl.PtrOffset(int(offset)))
+func (*backend) VertexAttribArrayPointer(a *gg.Attribute, size int, typ gg.Enum, normalized bool, stride, offset int) {
+	gl.VertexAttribPointer(
+		a.Value.(uint32),
+		int32(size),
+		uint32(typ),
+		normalized,
+		int32(stride),
+		gl.PtrOffset(offset),
+	)
 }
 
-func (*backend) DrawArrays(mode gg.Enum, first, count int32) {
-	gl.DrawArrays(uint32(mode), first, count)
+func (*backend) DrawArrays(mode gg.Enum, first, count int) {
+	gl.DrawArrays(uint32(mode), int32(first), int32(count))
 }
 
 type Rect struct {
