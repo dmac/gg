@@ -6,7 +6,7 @@ import (
 	"log"
 	"time"
 
-	webgg "github.com/dmac/gg/webgl/gg"
+	"github.com/dmac/gg/webgl/gg"
 	"github.com/gopherjs/gopherjs/js"
 	"github.com/gopherjs/webgl"
 )
@@ -24,7 +24,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	webgg.Init(gl)
+	gg.Init(gl)
 
 const vertShader = `#version 100
 

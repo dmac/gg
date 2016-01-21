@@ -1,6 +1,6 @@
 // +build js
 
-package gg
+package gg_webgl
 
 import (
 	"fmt"
