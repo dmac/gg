@@ -27,7 +27,7 @@ type Tetris struct {
 	board    *Board
 	score    int
 
-	mu sync.Mutex
+	mu       sync.Mutex
 	gameOver bool
 }
 
@@ -136,7 +136,6 @@ func (t *Tetris) HandleInput(input Input) {
 	if input != inputDown && input != inputSpace {
 		return
 	}
-	fmt.Printf("%#v\n", t.board.current)
 	t.board.AnchorCurrent()
 	cleared := t.board.ClearLines()
 	if cleared > 0 {

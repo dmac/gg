@@ -6,7 +6,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/dmac/gg/webgl/gg"
+	ggwebgl "github.com/dmac/gg/webgl/gg"
 	"github.com/gopherjs/gopherjs/js"
 	"github.com/gopherjs/webgl"
 )
@@ -24,9 +24,9 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	gg.Init(gl)
+	ggwebgl.Init(gl)
 
-const vertShader = `#version 100
+	const vertShader = `#version 100
 
 uniform mat4 proj;
 attribute vec3 vertex_position;
@@ -36,7 +36,7 @@ void main() {
 }
 `
 
-const fragShader = `#version 100
+	const fragShader = `#version 100
 
 uniform highp vec4 color;
 

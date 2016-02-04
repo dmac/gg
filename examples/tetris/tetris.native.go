@@ -102,7 +102,6 @@ func LoadTextures() (map[string]*gg.Texture, error) {
 	return textures, nil
 }
 
-// TODO(dmac) Move into gg helpers package
 func newImageTexture(filename string) (*gg.Texture, error) {
 	f, err := os.Open(filename)
 	if err != nil {
