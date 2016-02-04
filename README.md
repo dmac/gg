@@ -6,18 +6,22 @@ It enables compiling shared graphics code for different targets, including deskt
 ## Stability
 
 This project is not yet stable and may contain breaking API changes.
+The full OpenGL API is not yet implemented by the `gg.Backend` interface.
 
 ## Currently supported backends
 
 - OpenGL 2.1
 - WebGL
 
-## TODO
+## Examples
 
-- Usage docs
-- Create a helper package (ggh) and consider moving higher-level conveniences like Sprites into it.
-- Rewrite tetris example using new API
-- Can usage of interface{} be improved?
-  - TexImage2D data argument
-  - gg types (Buffer, Shader, etc.)
-- Make example web page with playable game
+The examples target two platforms: native (OpenGL 2.1) and web (WebGL). To build for each platform:
+
+```
+# native
+$ go build
+
+# web
+$ gopherjs build
+$ python -m SimpleHTTPServer
+```
