@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/dmac/gg"
-	ggwebgl "github.com/dmac/gg/webgl/gg"
+	ggwebgl "github.com/dmac/gg/webgl"
 	"github.com/gopherjs/gopherjs/js"
 	"github.com/gopherjs/webgl"
 	"honnef.co/go/js/dom"
