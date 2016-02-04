@@ -1,4 +1,4 @@
-package gg
+package gg_webgl
 
 import (
 	"fmt"
